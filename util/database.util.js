@@ -1,8 +1,15 @@
 const { Sequelize } = require('sequelize');
+const { databaseConfig } = require('../config/database.config');
 
-const sequelize = new Sequelize('baker', 'root', '', {
-    host: '127.0.0.1',
-    dialect: 'mysql' /* one of 'mysql' | 'postgres' | 'sqlite' | 'mariadb' | 'mssql' | 'db2' | 'snowflake' | 'oracle' */
+const sequelize = new Sequelize(
+  databaseConfig.databaseName,
+  databaseConfig.userName,
+  databaseConfig.password,
+  {
+  host:databaseConfig.host,
+  dialect: databaseConfig.type
   });
+
+  
 
   module.exports = { sequelize }

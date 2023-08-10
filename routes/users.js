@@ -1,7 +1,6 @@
 var express = require("express");
 const User = require("../model/user.model");
 const { getHash } = require("../util/password.util");
-const { promiseImpl } = require("ejs");
 var router = express.Router();
 
 /* GET users listing. */
@@ -10,7 +9,19 @@ router.get("/", function (req, res, next) {
 });
 
 router.get("/nickname-check", async(req, res) => {
-  User.find
+  console.log(req.query);
+  if(!req?.query?.nickname) {
+    res.status(400).json({statusMessage: "Invalid params"})
+    return
+  }
+  const user = await User.findOne({where: {nickname:req.query.nickname}}) 
+
+  if(user){
+    // res.status(409).json({statusMessage: "Duplicated Nickname"})
+    res.json({ isDuplicated: true})
+    return
+  }
+  res.json({isDuplicated: false})
 })
 
 router.post("/sign-up", async (req, res) => {
@@ -47,5 +58,54 @@ router.post("/sign-up", async (req, res) => {
 
   res.json(createUser);
 });
+
+//로그인api
+
+router.post('/login', async (req, res) => {
+
+  const { nickname }  = req.body
+  
+  
+  
+  try {
+    const user = await User.findOne({ where: { nickname } });
+    // console.log('nickname: ', nickname);
+    console.log('userpassword: ', user.password);
+    if (user && user.password) {
+      return res.json({ success: true, message: 'Login successful', nickname: nickname, password: user.password});
+
+    } else {
+      return res.json({ success: false, message: 'Invalid username or password' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+  
+  // User.findOne({ where: { password } })
+
+  
+
+//  아이디와 비번이 없을경우
+  // if(req?.body?.nickname || !req?.body?.password){
+  //   res.status(409).json({statusMessage: "Invalid params"})
+  //   return
+  // }
+
+  // if(req?.body?.nickname){
+  //   res.status(409).json({statusMessage: "Invalid params"})
+  //   return
+  // }
+  
+  // const loginParams = req.body
+
+  // if(!user){
+  //   res.status(409).json({statusMessage: "User Not Found"})
+  //   return
+  // }
+
+
+  // loginParams.password
+})
 
 module.exports = router;
