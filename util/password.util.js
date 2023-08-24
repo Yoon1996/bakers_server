@@ -1,3 +1,4 @@
+//crypto 사용
 // const crypto = require("crypto");
 
 // const getHash = (password) => {
@@ -8,20 +9,22 @@
 // const salt = crypto.randomBytes(16).toString('hex');
 //솔트 생성
 
-//해쉬드 패스워드 생성
-//최종 비밀번호 = 해쉬드 패스워드 + 솔트
-//
-
 // const passwordCheck = (hashedPassword, password) => {
 //     return crypto.check
 // }
 
-//becrpt 사용
+// 8/20 becrypt 사용 
 const bcrypt = require('bcrypt');
 
-const hash =  (password) => {
-    return bcrypt.hashSync(PW, salt);
+//hash password 생성
+const getHash =  (password) => {
+    return bcrypt.hashSync(password, 12);
+}
+
+//원래 비밀번호와 hash 처리된 비밀번호
+const compare = (originPassword, hashedPassword) => {
+    return bcrypt.compareSync(originPassword, hashedPassword);
 }
 module.exports ={
-    
+    getHash, compare
 }

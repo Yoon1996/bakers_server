@@ -1,6 +1,8 @@
 var express = require("express");
 const User = require("../model/user.model");
-const { getHash } = require("../util/password.util");
+const { getHash, compare } = require("../util/password.util");
+const { tokenSign, tokenValidation } = require("../util/auth.util");
+const { authMiddleware } = require("../middleware/auth.middleware");
 var router = express.Router();
 
 /* GET users listing. */
@@ -8,8 +10,43 @@ router.get("/", function (req, res, next) {
   res.send("respond with a resource");
 });
 
+//토큰 인증 api
+router.get('/token-verify', (req, res) => {
+
+  try {
+
+    req.headers.authorization
+    console.log('req.headers.authorization: ', req.headers.authorization);
+
+    if(!req?.headers?.authorization) throw 'Unauthorized'
+  
+    const tokenList = req.headers.authorization.split(' ')
+  
+    if(tokenList.length < 1) throw 'Unauthorized'
+
+    const token = tokenList[1]
+    const userInfo = tokenValidation(token)
+    res.json(userInfo)
+
+  } catch(error){
+    console.log('error: ', error);
+    if(error === 'Unauthorized'){
+    res.status(401).json({statusMessage: 'Unauthorized'})
+  }else if(error.message === 'jwt expired'){
+    res.status(401).json({statusMessage: 'Token Expired'})
+  } else if(error.message === ''){
+    res.status(500).json({statusMessage: "Internal server error"})
+  }
+  }
+
+
+})
+//아이디 유효성 확인 api
 router.get("/nickname-check", async(req, res) => {
-  console.log(req.query);
+
+  req.headers.authorization
+  console.log('req.headers.authorization: ', req.headers.authorization);
+
   if(!req?.query?.nickname) {
     res.status(400).json({statusMessage: "Invalid params"})
     return
@@ -23,7 +60,7 @@ router.get("/nickname-check", async(req, res) => {
   }
   res.json({isDuplicated: false})
 })
-
+//회원 가입 api
 router.post("/sign-up", async (req, res) => {
   // res.send("aaaa");
   // const email = 'test@namer.com'
@@ -63,49 +100,63 @@ router.post("/sign-up", async (req, res) => {
 
 router.post('/login', async (req, res) => {
 
-  const { nickname }  = req.body
   
   
+  const { nickname, password }  = req.body
   
   try {
     const user = await User.findOne({ where: { nickname } });
     // console.log('nickname: ', nickname);
     console.log('userpassword: ', user.password);
-    if (user && user.password) {
-      return res.json({ success: true, message: 'Login successful', nickname: nickname, password: user.password});
 
+    if(!user) throw 'INVALID_USERNAME_OR_PASSWORD'
+
+
+      const compareRes = compare(password, user.password)
+      console.log('compareRes: ', compareRes);
+
+      if(!compareRes) throw 'INVALID_USERNAME_OR_PASSWORD'
+
+      //userinfo 에서 password 를 뺀 객체
+      let {password: dummyPassword, ...userInfo} = user.toJSON()
+      const accessToken = tokenSign(userInfo)
+      userInfo = {...userInfo, accessToken}
+
+      if(compareRes){
+      return res.json(userInfo);
     } else {
       return res.json({ success: false, message: 'Invalid username or password' });
     }
+
+
+    
   } catch (error) {
     console.error(error);
+    if(error === 'INVALID_USERNAME_OR_PASSWORD'){
+      return res.status(403).json({ success: false, message: 'Invalid username or password' });
+    } else{
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
+}
+})
+
+
+//로그아웃 api
+router.post('/logout', async (req, res) => {
   
-  // User.findOne({ where: { password } })
+  res.json({ success: true, message: 'Logged out successfully' });
+})
 
-  
-
-//  아이디와 비번이 없을경우
-  // if(req?.body?.nickname || !req?.body?.password){
-  //   res.status(409).json({statusMessage: "Invalid params"})
-  //   return
-  // }
-
-  // if(req?.body?.nickname){
-  //   res.status(409).json({statusMessage: "Invalid params"})
-  //   return
-  // }
-  
-  // const loginParams = req.body
-
-  // if(!user){
-  //   res.status(409).json({statusMessage: "User Not Found"})
-  //   return
-  // }
+//내 정보 열람
+router.get('/info', async (req, res) => {
 
 
-  // loginParams.password
+  const userId = req.userInfo.id
+  console.log('userId: ', userId);
+
+  User.findOne
+
+
 })
 
 module.exports = router;

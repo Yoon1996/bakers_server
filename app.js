@@ -7,9 +7,14 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var categoryRouter = require('./routes/category');
+var postRouter = require('./routes/post')
+var recipeRouter = require('./routes/recipe')
 
 const cors = require('cors');
 const { sequelize } = require('./util/database.util');
+const { authMiddleware } = require('./middleware/auth.middleware');
+const { authGuard } = require('./guard/auth.guard');
+const Ingredient = require('./model/ingredient.model');
 
 var app = express();
 
@@ -33,9 +38,13 @@ sequelize.authenticate()
   console.log('connect fail !!!:' , error);
 })
 
+
+app.use(authMiddleware)
 app.use('/', indexRouter);
+app.use('/post', authGuard, postRouter)
 app.use('/users', usersRouter);
 app.use('/category', categoryRouter);
+app.use('/recipe', recipeRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
