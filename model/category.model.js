@@ -1,23 +1,16 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../util/database.util');
-const Recipe = require('./recipe.model');
+const { sequelize } = require('../util/database.util')
 
-const Ingredient = sequelize.define('ingredient', {
+const Category = sequelize.define('category', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
-    recipeId: {
+    userId: {
         type: DataTypes.INTEGER
     },
     name: {
-        type: DataTypes.STRING
-    },
-    ea: {
-        type: DataTypes.INTEGER
-    },
-    unit: {
         type: DataTypes.STRING
     },
     createdAt: {
@@ -30,6 +23,5 @@ const Ingredient = sequelize.define('ingredient', {
 
 }, { freezeTableName: true }) // table 이름 고정 (변형위험있음)
 
-// Ingredient.belongsTo(Recipe, { foreignKey: 'id' })
 
-module.exports = Ingredient
+module.exports = Category
