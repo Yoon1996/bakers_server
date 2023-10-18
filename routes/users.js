@@ -136,6 +136,28 @@ router.post('/login', async (req, res) => {
   }
 })
 
+//소셜로그인 api
+router.post("/social-login", async (req, res) => {
+  try {
+
+    console.log(req.body)
+
+    // if (clientId) {
+    //   await User.create({
+    //     id,
+    //     nickname,
+    //     email,
+    //     birth,
+    //     withDraw: false,
+    //   });
+    // }
+    res.json("dd")
+  }
+  catch (err) {
+    console.log('err: ', err);
+  }
+})
+
 //회원정보 수정api
 router.put("/user/:userId", async (req, res) => {
   try {
