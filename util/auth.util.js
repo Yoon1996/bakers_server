@@ -9,7 +9,6 @@ const tokenSign = (userInfo) => {
 }
 
 //토큰 검증
-
 const tokenValidation = (token) => {
     return jwt.verify(token, jwtSecret)
 }

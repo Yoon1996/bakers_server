@@ -3,6 +3,8 @@ const User = require("../model/user.model");
 const { getHash, compare } = require("../util/password.util");
 const { tokenSign, tokenValidation } = require("../util/auth.util");
 var router = express.Router();
+const { OAuth2Client } = require('google-auth-library');
+const { Op } = require("sequelize");
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {
@@ -84,6 +86,7 @@ router.post("/sign-up", async (req, res) => {
     email,
     name,
     birth,
+    provider: "email",
     password: getHash(password),
     withDraw: false,
   });
@@ -103,7 +106,6 @@ router.post('/login', async (req, res) => {
   try {
     const user = await User.findOne({ where: { nickname } });
     // console.log('nickname: ', nickname);
-    console.log('userpassword: ', user.password);
 
     if (!user) throw 'INVALID_USERNAME_OR_PASSWORD'
 
@@ -114,9 +116,12 @@ router.post('/login', async (req, res) => {
     if (!compareRes) throw 'INVALID_USERNAME_OR_PASSWORD'
 
     //userinfo 에서 password 를 뺀 객체
+
+    //rest properties
     let { password: dummyPassword, ...userInfo } = user.toJSON()
     const accessToken = tokenSign(userInfo)
     userInfo = { ...userInfo, accessToken }
+    console.log(accessToken)
 
     if (compareRes) {
       return res.json(userInfo);
@@ -140,18 +145,63 @@ router.post('/login', async (req, res) => {
 router.post("/social-login", async (req, res) => {
   try {
 
-    console.log(req.body)
 
-    // if (clientId) {
-    //   await User.create({
-    //     id,
-    //     nickname,
-    //     email,
-    //     birth,
-    //     withDraw: false,
-    //   });
-    // }
-    res.json("dd")
+    const client = new OAuth2Client("926618531398-36t5psht9gd5c2sk9irjdf8vlvltpd22.apps.googleusercontent.com", "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", "postmessage");
+    const data = await client.getToken(req.body.code)
+    const token = await client.verifyIdToken({ idToken: data.tokens.id_token })
+
+
+    const gmail = token.payload.email
+    const gname = token.payload.name
+
+
+    //구글 소셜 로그인 이메일이 DB에 있는지 확인하기
+    const foundUserProvider = await User.findOne({
+      where: {
+        email: gmail,
+        provider: "email"
+      }
+    })
+
+    const foundUserProviderGoogle = await User.findOne({
+      where: {
+        email: gmail,
+        provider: "google"
+      }
+    })
+
+
+    if (foundUserProvider) {
+      //바로 로그인 하기, provider에 구글추가해주기
+      await User.update({ provider: "email, google" }, {
+        where: {
+          email: gmail,
+          provider: {
+            [Op.like]: "email"
+          }
+        }
+      })
+    } else if (foundUserProviderGoogle) {
+    } else {
+      //없으면 새로 생성해주기
+      await User.create({
+        nickname: gname,
+        password: null,
+        email: gmail,
+        name: gname,
+        birth: null,
+        provider: "google",
+        withDraw: false
+      })
+
+    }
+
+    //토큰발급
+    const user = await User.findOne({ where: { email: gmail } })
+    let { password: dummyPassword, ...userInfo } = user.toJSON()
+    const accessToken = tokenSign(userInfo)
+    userInfo = { ...userInfo, accessToken }
+    res.json(userInfo)
   }
   catch (err) {
     console.log('err: ', err);
