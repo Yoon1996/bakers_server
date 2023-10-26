@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: excusting remote ssh commands
-        uses: appleboy/ssh-action@v0.1.6
+        uses: appleboy/ssh-action@master
         with:
           host: ${{secrets.REMOTE_IP}}
           username: ${{secrets.REMOTE_USER}}
@@ -21,6 +21,8 @@ jobs:
           script: |
             cd /home/ubuntu/bakers_server
             git pull origin main
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
             pm2 kill
             npm i
             npm run pm2:production
