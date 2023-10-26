@@ -17,6 +17,8 @@ const { authMiddleware } = require('./middleware/auth.middleware');
 const { authGuard } = require('./guard/auth.guard');
 const Ingredient = require('./model/ingredient.model');
 
+console.log(process.env.NODE_ENV)
+
 
 var app = express();
 
