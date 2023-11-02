@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "pm2:local":"pm2 start ecosystem.config.js",
-    "pm2:production":"pm2 start ecosystem.config.js --env production"
+    "pm2:local":"pm2 start ecosystem.config.js --time",
+    "pm2:production":"pm2 start ecosystem.config.js --env production --time"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",

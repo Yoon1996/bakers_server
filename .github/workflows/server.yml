@@ -1,25 +1,25 @@
-name: bakers-server
+name: bakers-server # 워크플로우의 이름을 설정
 
-on:
-  push:
-    branches:
-      - main
+on: # 이벤트 트리거를 정의
+  push: # push 이벤트를 기준으로 설정
+    branches: # 푸시 이벤트가 발생하는 브랜치를 지정
+      - main # main 브랜치에 대해 설정
 
-jobs:
-  deploy:
-    name: deploy
-    runs-on: ubuntu-latest
+jobs: # 워크플로우 내에서 수행할 작업을 정의
+  deploy: # 작업의 이름을 deploy로 지정
+    name: deploy # 해당 작업의 이름을 deploy로 설정
+    runs-on: ubuntu-latest # 작업을 수행할 환경을 지정
 
-    steps:
-      - name: excusting remote ssh commands
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{secrets.REMOTE_IP}}
-          username: ${{secrets.REMOTE_USER}}
-          key: ${{secrets.REMOTE_PRIVATE_KEY}}
-          port: ${{secrets.REMOTE_SSH_PORT}}
-          script: |
-            cd /home/ubuntu/bakers_server
+    steps: # 작업 내에서 수행할 단계를 정의
+      - name: excusting remote ssh commands # 해당 단계의 이름을 원격 ssh 명령 실행으로 설정
+        uses: appleboy/ssh-action@master # appleboy/ssh-action 사용
+        with: #입력 변수 설정
+          host: ${{secrets.REMOTE_IP}} #호스트 주소 설정
+          username: ${{secrets.REMOTE_USER}} # 사용자의 이름 설정
+          key: ${{secrets.REMOTE_PRIVATE_KEY}} # 개인 키를 설정
+          port: ${{secrets.REMOTE_SSH_PORT}} # SSH 포트를 설정
+          script: | #실행할 스크림트 설정
+            cd /home/ubuntu/bakers_server 
             git pull origin main
             export NVM_DIR=~/.nvm
             source ~/.nvm/nvm.sh
