@@ -2,13 +2,12 @@ module.exports = {
     apps: [{
         name: 'bakers-server',
         script: './bin/www',
+        time: true,
         env: {
             NODE_ENV: 'local',
-            time: true,
         },
         env_production: {
             NODE_ENV: "prod",
-            time: true,
         }
     }]
 }
