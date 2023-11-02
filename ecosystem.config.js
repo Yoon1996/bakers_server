@@ -3,7 +3,7 @@ module.exports = {
         name: 'bakers-server',
         script: './bin/www',
         time: true,
-        log_date_format: "MM-DD hh:mm:ss.SSS +09:00",
+        log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
         env: {
             NODE_ENV: 'local',
         },
